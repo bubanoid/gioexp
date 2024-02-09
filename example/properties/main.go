@@ -7,7 +7,6 @@ import (
 	"os"
 
 	"gioui.org/app"
-	"gioui.org/font/gofont"
 	"gioui.org/io/key"
 	"gioui.org/io/system"
 	"gioui.org/layout"
@@ -24,7 +23,7 @@ type (
 )
 
 func main() {
-	ui := NewUI(material.NewTheme(gofont.Collection()))
+	ui := NewUI(material.NewTheme())
 
 	go func() {
 		w := app.NewWindow(app.Title("Property List"))
@@ -75,8 +74,8 @@ func NewUI(theme *material.Theme) *UI {
 
 func (ui *UI) Run(w *app.Window) error {
 	var ops op.Ops
-	for e := range w.Events() {
-		switch e := e.(type) {
+	for {
+		switch e := w.NextEvent().(type) {
 		case system.FrameEvent:
 			gtx := layout.NewContext(&ops, e)
 			ui.Layout(gtx)
@@ -90,12 +89,10 @@ func (ui *UI) Run(w *app.Window) error {
 			return e.Err
 		}
 	}
-
-	return nil
 }
 
 func (ui *UI) Layout(gtx C) D {
-	if ui.btn.Clicked() {
+	if ui.btn.Clicked(gtx) {
 		ui.prop5.Editable = !ui.prop5.Editable
 		ui.dd.Selected = 2
 		ui.prop5.SetValue(234)

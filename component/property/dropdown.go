@@ -43,7 +43,7 @@ func (a *DropDown) Layout(th *material.Theme, pgtx, gtx C) D {
 	}
 	for i := range a.items {
 		click := a.clickables[i]
-		if click.Clicked() {
+		if click.Clicked(gtx) {
 			a.Selected = i
 		}
 		a.menu.Options = append(a.menu.Options, component.MenuItem(th, click, a.items[i]).Layout)
@@ -61,7 +61,7 @@ func (a *DropDown) Layout(th *material.Theme, pgtx, gtx C) D {
 			a.focused = e.Focus
 		}
 	}
-	a.click.Events(gtx)
+	a.click.Update(gtx)
 	if a.click.Pressed() {
 		// Request focus
 		key.FocusOp{Tag: a}.Add(gtx.Ops)

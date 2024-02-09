@@ -35,7 +35,7 @@ type List struct {
 	names   []string
 
 	// PropertyHeight is the height of a single property. All properties have
-	// the same dimensions. The width depends of the horizontal space available
+	// the same dimensions. The width depends on the horizontal space available
 	// for the list
 	PropertyHeight unit.Dp
 
@@ -127,7 +127,7 @@ func (plist *List) Layout(th *material.Theme, gtx C) D {
 				continue
 			}
 
-			switch e.Type {
+			switch e.Kind {
 			case pointer.Press:
 				if plist.drag {
 					break
@@ -161,7 +161,7 @@ func (plist *List) Layout(th *material.Theme, gtx C) D {
 		pointer.CursorColResize.Add(gtx.Ops)
 		pointer.InputOp{
 			Tag:   plist,
-			Types: pointer.Press | pointer.Drag | pointer.Release,
+			Kinds: pointer.Press | pointer.Drag | pointer.Release,
 			Grab:  plist.drag,
 		}.Add(gtx.Ops)
 	}
