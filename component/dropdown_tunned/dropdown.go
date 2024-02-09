@@ -50,17 +50,17 @@ func NewDropdown(ddWidget []string) *DropDown {
 	}
 }
 
-func (ddWrapper *DropDown) visibleHeight(gtx C) int {
-	return min(gtx.Dp(ddWrapper.PropertyHeight), gtx.Constraints.Max.Y)
+func (dd *DropDown) visibleHeight(gtx C) int {
+	return min(gtx.Dp(dd.PropertyHeight), gtx.Constraints.Max.Y)
 }
 
-func (ddWrapper *DropDown) visibleWidth(gtx C) int {
-	return min(gtx.Dp(ddWrapper.PropertyWidth), gtx.Constraints.Max.X)
+func (dd *DropDown) visibleWidth(gtx C) int {
+	return min(gtx.Dp(dd.PropertyWidth), gtx.Constraints.Max.X)
 }
 
-func (ddWrapper *DropDown) Layout(th *material.Theme, gtx C) D {
-	wtotal := ddWrapper.visibleWidth(gtx)
-	htotal := ddWrapper.visibleHeight(gtx)
+func (dd *DropDown) Layout(th *material.Theme, gtx C) D {
+	wtotal := dd.visibleWidth(gtx)
+	htotal := dd.visibleHeight(gtx)
 
 	gtx.Constraints.Max.X = wtotal
 
@@ -77,9 +77,9 @@ func (ddWrapper *DropDown) Layout(th *material.Theme, gtx C) D {
 		return layout.Inset{}.Layout(
 			gtx,
 			func(gtx C) D {
-				gtx.Constraints.Min.Y = gtx.Dp(ddWrapper.PropertyHeight)
-				gtx.Constraints.Max.Y = gtx.Dp(ddWrapper.PropertyHeight)
-				return ddWrapper.layoutProperty(th, pgtx, gtx)
+				gtx.Constraints.Min.Y = gtx.Dp(dd.PropertyHeight)
+				gtx.Constraints.Max.Y = gtx.Dp(dd.PropertyHeight)
+				return dd.layoutProperty(th, pgtx, gtx)
 			},
 		)
 	})
@@ -95,16 +95,16 @@ func min[T constraints.Ordered](a, b T) T {
 }
 
 // layoutProperty lays out the property at index i from the list.
-func (ddWrapper *DropDown) layoutProperty(th *material.Theme, pgtx, gtx C) D {
+func (dd *DropDown) layoutProperty(th *material.Theme, pgtx, gtx C) D {
 	rsize := gtx.Constraints.Max.X
 
 	{
 		// Draw property value.
 		gtx := gtx
-		off := op.Offset(ddWrapper.offset).Push(gtx.Ops)
+		off := op.Offset(dd.offset).Push(gtx.Ops)
 		size := image.Pt(rsize, gtx.Constraints.Max.Y)
 		gtx.Constraints = layout.Exact(size)
-		ddWrapper.DdWidget.Layout(th, pgtx, gtx)
+		dd.DdWidget.Layout(th, pgtx, gtx)
 		off.Pop()
 	}
 
