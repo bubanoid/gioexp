@@ -42,9 +42,9 @@ type DropDown struct {
 }
 
 // NewDropdown creates a new DropDown.
-func NewDropdown(ddWidget []string) *DropDown {
+func NewDropdown(ddValues []string) *DropDown {
 	return &DropDown{
-		DdWidget:       *NewDropDownWidget(ddWidget),
+		DdWidget:       *NewDropDownWidget(ddValues),
 		PropertyHeight: DefaultPropertyHeight,
 		PropertyWidth:  DefaultPropertyWidth,
 	}
