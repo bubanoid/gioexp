@@ -1,130 +1,120 @@
 package dropdown_tunned
 
 import (
-	"image"
-	"image/color"
-
-	"gioui.org/f32"
-	"gioui.org/gesture"
-	"gioui.org/io/key"
-	"gioui.org/io/pointer"
-	"gioui.org/layout"
 	"gioui.org/op"
-	"gioui.org/op/clip"
-	"gioui.org/op/paint"
-	"gioui.org/text"
+	"image"
+
+	"gioui.org/layout"
+	"gioui.org/unit"
 	"gioui.org/widget"
 	"gioui.org/widget/material"
-	"gioui.org/x/component"
+	"golang.org/x/exp/constraints"
 )
 
-func rgb(c uint32) color.NRGBA {
-	return argb(0xff000000 | c)
+type (
+	C = layout.Context
+	D = layout.Dimensions
+)
+
+const (
+	DefaultPropertyHeight = unit.Dp(30)
+	DefaultPropertyWidth  = unit.Dp(160)
+)
+
+// A DropDown holds and presents a vertical, scrollable list of properties. A DropDown
+// is divided into 2 columns: property names on the left and widgets for
+// property values on the right. These 2 sections can be resized thanks to a
+// divider, which can be dragged.
+type DropDown struct {
+	DdWidget DropDownWidget
+
+	// PropertyHeight is the height of a property. All properties have
+	// the same dimensions. The width depends on the horizontal space available
+	// for the list
+	PropertyHeight unit.Dp
+
+	// PropertyWidth is the width of a property. All properties have
+	// the same width.
+	PropertyWidth unit.Dp
+
+	// offset is the offset of the dropdown values
+	offset image.Point
 }
 
-func argb(c uint32) color.NRGBA {
-	return color.NRGBA{A: uint8(c >> 24), R: uint8(c >> 16), G: uint8(c >> 8), B: uint8(c)}
+// NewDropdownWrapper creates a new DropDown.
+func NewDropdownWrapper(ddWidget []string) *DropDown {
+	return &DropDown{
+		DdWidget:       *NewDropDownWidget(ddWidget),
+		PropertyHeight: DefaultPropertyHeight,
+		PropertyWidth:  DefaultPropertyWidth,
+	}
 }
 
-var darkGrey = rgb(0xa9a9a9)
-
-func NewDropDownWidget(items []string) *DropDownWidget {
-	return &DropDownWidget{items: items}
+func (ddWrapper *DropDown) visibleHeight(gtx C) int {
+	return min(gtx.Dp(ddWrapper.PropertyHeight), gtx.Constraints.Max.Y)
 }
 
-type DropDownWidget struct {
-	Widget
-	Selected int
-
-	items      []string
-	area       component.ContextArea
-	menu       component.MenuState
-	clickables []*widget.Clickable
-
-	focused bool
-	click   gesture.Click
+func (ddWrapper *DropDown) visibleWidth(gtx C) int {
+	return min(gtx.Dp(ddWrapper.PropertyWidth), gtx.Constraints.Max.X)
 }
 
-func (a *DropDownWidget) Layout(th *material.Theme, pgtx, gtx C) D {
-	// Handle menu selection.
-	a.menu.Options = a.menu.Options[:0]
-	for len(a.clickables) <= len(a.items) {
-		a.clickables = append(a.clickables, &widget.Clickable{})
+func (ddWrapper *DropDown) Layout(th *material.Theme, gtx C) D {
+	wtotal := ddWrapper.visibleWidth(gtx)
+	htotal := ddWrapper.visibleHeight(gtx)
+
+	gtx.Constraints.Max.X = wtotal
+
+	dim := widget.Border{
+		Color:        th.Fg,
+		CornerRadius: unit.Dp(2),
+		Width:        unit.Dp(1),
+	}.Layout(gtx, func(gtx C) D {
+		// Copy the context passed to property widgets, we don't want
+		// its size constrained since it's used as modal pane.
+		pgtx := gtx
+		gtx.Constraints = layout.Exact(image.Pt(wtotal, htotal))
+
+		return layout.Inset{}.Layout(
+			gtx,
+			func(gtx C) D {
+				gtx.Constraints.Min.Y = gtx.Dp(ddWrapper.PropertyHeight)
+				gtx.Constraints.Max.Y = gtx.Dp(ddWrapper.PropertyHeight)
+				return ddWrapper.layoutProperty(th, pgtx, gtx)
+			},
+		)
+	})
+
+	return dim
+}
+
+func min[T constraints.Ordered](a, b T) T {
+	if a < b {
+		return a
 	}
-	for i := range a.items {
-		click := a.clickables[i]
-		if click.Clicked(gtx) {
-			a.Selected = i
-		}
-		a.menu.Options = append(a.menu.Options, component.MenuItem(th, click, a.items[i]).Layout)
-	}
-	a.area.Activation = pointer.ButtonPrimary
-	a.area.AbsolutePosition = true
+	return b
+}
 
-	// Handle focus "manually". When the dropdown is closed we draw a label,
-	// which can't receive focus. By registering a key.InputOp we can then receive
-	// focus events (and draw the focus border). We also want to grab the focus when
-	// the dropdown is opened: we do this with a.click.
-	for _, e := range gtx.Events(a) {
-		switch e := e.(type) {
-		case key.FocusEvent:
-			a.focused = e.Focus
-		}
-	}
-	a.click.Update(gtx)
-	if a.click.Pressed() {
-		// Request focus
-		key.FocusOp{Tag: a}.Add(gtx.Ops)
+// layoutProperty lays out the property at index i from the list.
+func (ddWrapper *DropDown) layoutProperty(th *material.Theme, pgtx, gtx C) D {
+	rsize := gtx.Constraints.Max.X
+
+	{
+		// Draw property value.
+		gtx := gtx
+		off := op.Offset(ddWrapper.offset).Push(gtx.Ops)
+		size := image.Pt(rsize, gtx.Constraints.Max.Y)
+		gtx.Constraints = layout.Exact(size)
+		ddWrapper.DdWidget.Layout(th, pgtx, gtx)
+		off.Pop()
 	}
 
-	// Clip events to the DdWidget area only.
-	clipOp := clip.Rect{Max: gtx.Constraints.Max}.Push(gtx.Ops)
-	key.InputOp{Tag: a, Hint: key.HintAny}.Add(gtx.Ops)
-	a.click.Add(gtx.Ops)
-	clipOp.Pop()
+	return layout.Dimensions{Size: gtx.Constraints.Max}
+}
 
-	wgtx := gtx
-	return layout.Stack{}.Layout(pgtx,
-		layout.Stacked(func(gtx C) D {
-			gtx.Constraints = layout.Exact(wgtx.Constraints.Max)
-			defer clip.Rect{Max: gtx.Constraints.Max}.Push(gtx.Ops).Pop()
-
-			inset := layout.Inset{Top: 1, Right: 4, Bottom: 1, Left: 4}
-			label := material.Label(th, th.TextSize, a.items[a.Selected])
-			label.MaxLines = 1
-			label.TextSize = th.TextSize
-			label.Alignment = text.Start
-			label.Color = th.Fg
-
-			// Draw a triangle to discriminate a drop down widgets from text props.
-			//      w
-			//  _________  _
-			//  \       /  |
-			//   \  o  /   | h
-			//    \   /    |
-			//     \ /     |
-			// (o is the offset from which we begin drawing).
-			const w, h = 13, 7
-			off := image.Pt(gtx.Constraints.Max.X-w, gtx.Constraints.Max.Y/2-h)
-			stack := op.Offset(off).Push(gtx.Ops)
-			anchor := clip.Path{}
-			anchor.Begin(gtx.Ops)
-			anchor.Move(f32.Pt(-w/2, +h/2))
-			anchor.Line(f32.Pt(w, 0))
-			anchor.Line(f32.Pt(-w/2, h))
-			anchor.Line(f32.Pt(-w/2, -h))
-			anchor.Close()
-			anchorArea := clip.Outline{Path: anchor.End()}.Op()
-			paint.FillShape(gtx.Ops, darkGrey, anchorArea)
-			stack.Pop()
-
-			return FocusBorder(th, a.focused).Layout(gtx, func(gtx C) D {
-				return inset.Layout(gtx, label.Layout)
-			})
-		}),
-		layout.Expanded(func(gtx C) D {
-			gtx.Constraints = layout.Exact(gtx.Constraints.Max)
-			return a.area.Layout(gtx, component.Menu(th, &a.menu).Layout)
-		}),
-	)
+// Widget shows the value of a property and handles user actions to edit it.
+type Widget interface {
+	// Layout lays out the property DdWidget using gtx which is the
+	// property-specific context, and pgtx which is the parent context (useful
+	// for properties that require more space during edition).
+	Layout(th *material.Theme, pgtx, gtx layout.Context) D
 }
