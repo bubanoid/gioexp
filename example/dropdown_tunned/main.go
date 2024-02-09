@@ -45,7 +45,7 @@ func NewUI(theme *material.Theme) *UI {
 		th: theme,
 	}
 
-	ddWrapper := dropdown_tunned.NewDropdownWrapper(
+	ddWrapper := dropdown_tunned.NewDropdown(
 		[]string{"ciao", "bonjour", "hello", "hallo", "buongiorno", "buenos dias", "ola", "bom dia"},
 	)
 

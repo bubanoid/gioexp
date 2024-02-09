@@ -41,8 +41,8 @@ type DropDown struct {
 	offset image.Point
 }
 
-// NewDropdownWrapper creates a new DropDown.
-func NewDropdownWrapper(ddWidget []string) *DropDown {
+// NewDropdown creates a new DropDown.
+func NewDropdown(ddWidget []string) *DropDown {
 	return &DropDown{
 		DdWidget:       *NewDropDownWidget(ddWidget),
 		PropertyHeight: DefaultPropertyHeight,
