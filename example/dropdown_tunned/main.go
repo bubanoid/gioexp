@@ -79,20 +79,15 @@ func (ui *UI) Layout(gtx C) D {
 
 	gtx.Constraints.Min = gtx.Constraints.Max
 	return layout.Flex{
-		Axis: layout.Horizontal,
+		Axis:    layout.Vertical,
+		Spacing: layout.SpaceEnd,
 	}.Layout(gtx,
 		layout.Rigid(func(gtx C) D {
-			return layout.Flex{
-				Axis:    layout.Vertical,
-				Spacing: layout.SpaceEnd,
-			}.Layout(gtx,
-				layout.Rigid(func(gtx C) D {
-					return ui.dd.Layout(ui.th, gtx)
-				}),
-				layout.Rigid(func(gtx C) D {
-					return material.Button(ui.th, &ui.btn, "toggle editable").Layout(gtx)
-				}),
-			)
+			return ui.dd.Layout(ui.th, gtx)
+		}),
+		layout.Rigid(func(gtx C) D {
+			gtx.Constraints.Max.X = 200
+			return material.Button(ui.th, &ui.btn, "toggle editable").Layout(gtx)
 		}),
 	)
 }
