@@ -5,8 +5,6 @@ import (
 
 	"gioui.org/layout"
 	"gioui.org/op"
-	"gioui.org/op/clip"
-	"gioui.org/op/paint"
 	"gioui.org/unit"
 	"gioui.org/widget"
 	"gioui.org/widget/material"
@@ -121,12 +119,6 @@ func (plist *List) layoutProperty(idx int, th *material.Theme, pgtx, gtx C) D {
 	gtx.Constraints = layout.Exact(size)
 	plist.widgets[idx].Layout(th, pgtx, gtx)
 	off.Pop()
-
-	// Draw bottom border.
-	paint.FillShape(gtx.Ops, th.Fg, clip.Rect{
-		Min: image.Pt(0, gtx.Constraints.Max.Y-1),
-		Max: gtx.Constraints.Max,
-	}.Op())
 
 	return layout.Dimensions{Size: gtx.Constraints.Max}
 }
