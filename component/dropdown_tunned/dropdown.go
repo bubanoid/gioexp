@@ -17,8 +17,9 @@ type (
 )
 
 const (
-	DefaultPropertyHeight = unit.Dp(30)
-	DefaultPropertyWidth  = unit.Dp(160)
+	DefaultPropertyHeight     = unit.Dp(30)
+	DefaultPropertyWidth      = unit.Dp(140)
+	DefaultPropertyListHeight = unit.Dp(70)
 )
 
 // A DropDown holds and presents a vertical, scrollable list of properties. A DropDown
@@ -27,6 +28,9 @@ const (
 // divider, which can be dragged.
 type DropDown struct {
 	DdWidget DropDownWidget
+
+	// PropertyListHeight is the height of a expanded list
+	PropertyListHeight unit.Dp
 
 	// PropertyHeight is the height of a property. All properties have
 	// the same dimensions. The width depends on the horizontal space available
@@ -44,10 +48,15 @@ type DropDown struct {
 // NewDropdown creates a new DropDown.
 func NewDropdown(ddValues []string) *DropDown {
 	return &DropDown{
-		DdWidget:       *NewDropDownWidget(ddValues),
-		PropertyHeight: DefaultPropertyHeight,
-		PropertyWidth:  DefaultPropertyWidth,
+		DdWidget:           *NewDropDownWidget(ddValues),
+		PropertyListHeight: DefaultPropertyListHeight,
+		PropertyHeight:     DefaultPropertyHeight,
+		PropertyWidth:      DefaultPropertyWidth,
 	}
+}
+
+func (dd *DropDown) visibleListHeight(gtx C) int {
+	return min(gtx.Dp(dd.PropertyListHeight), gtx.Constraints.Max.Y)
 }
 
 func (dd *DropDown) visibleHeight(gtx C) int {
@@ -61,6 +70,7 @@ func (dd *DropDown) visibleWidth(gtx C) int {
 func (dd *DropDown) Layout(th *material.Theme, gtx C) D {
 	wtotal := dd.visibleWidth(gtx)
 	htotal := dd.visibleHeight(gtx)
+	hlist := dd.visibleListHeight(gtx)
 
 	gtx.Constraints.Max.X = wtotal
 
@@ -72,6 +82,7 @@ func (dd *DropDown) Layout(th *material.Theme, gtx C) D {
 		// Copy the context passed to property widgets, we don't want
 		// its size constrained since it's used as modal pane.
 		pgtx := gtx
+		pgtx.Constraints = layout.Exact(image.Pt(wtotal, htotal+hlist))
 		gtx.Constraints = layout.Exact(image.Pt(wtotal, htotal))
 
 		return layout.Inset{}.Layout(

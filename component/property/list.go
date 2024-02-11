@@ -27,7 +27,7 @@ const (
 )
 
 // A List holds and presents a vertical, scrollable list of properties. A List
-// is divided into into 2 columns: property names on the left and widgets for
+// is divided into 2 columns: property names on the left and widgets for
 // property values on the right. These 2 sections can be resized thanks to a
 // divider, which can be dragged.
 type List struct {

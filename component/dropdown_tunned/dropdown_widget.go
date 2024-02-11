@@ -72,6 +72,8 @@ func (a *DropDownWidget) Layout(th *material.Theme, pgtx, gtx C) D {
 		}
 	}
 	a.click.Update(gtx)
+
+	// todo (AA): didn't notice any effect
 	if a.click.Pressed() {
 		// Request focus
 		key.FocusOp{Tag: a}.Add(gtx.Ops)
@@ -96,7 +98,7 @@ func (a *DropDownWidget) Layout(th *material.Theme, pgtx, gtx C) D {
 			label.Alignment = text.Start
 			label.Color = th.Fg
 
-			// Draw a triangle to discriminate a drop down widgets from text props.
+			// Draw a triangle to discriminate a dropdown widgets from text props.
 			//      w
 			//  _________  _
 			//  \       /  |
