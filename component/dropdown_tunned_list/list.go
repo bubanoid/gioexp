@@ -45,7 +45,7 @@ type List struct {
 
 	// ratio keeps the current layout.
 	// 0 is center, -1 completely to the left, 1 completely to the right.
-	ratio float32
+	//ratio float32
 }
 
 // NewList creates a new List.
@@ -57,7 +57,7 @@ func NewList() *List {
 		list: layout.List{
 			Axis: layout.Vertical,
 		},
-		ratio: -1.0,
+		//ratio: -1.0,
 	}
 }
 
@@ -114,22 +114,13 @@ func clamp[T constraints.Ordered](mn, val, mx T) T {
 
 // layoutProperty lays out the property at index i from the list.
 func (plist *List) layoutProperty(idx int, th *material.Theme, pgtx, gtx C) D {
-	proportion := (plist.ratio + 1) / 2
-	whandle := gtx.Dp(plist.HandleBarWidth)
-	lsize := int(proportion*float32(gtx.Constraints.Max.X) - float32(whandle))
+	rsize := gtx.Constraints.Max.X
 
-	roff := lsize + whandle
-	rsize := gtx.Constraints.Max.X - roff
-
-	{
-		// Draw property value.
-		gtx := gtx
-		off := op.Offset(image.Pt(roff, 0)).Push(gtx.Ops)
-		size := image.Pt(rsize, gtx.Constraints.Max.Y)
-		gtx.Constraints = layout.Exact(size)
-		plist.widgets[idx].Layout(th, pgtx, gtx)
-		off.Pop()
-	}
+	off := op.Offset(image.Pt(0, 0)).Push(gtx.Ops)
+	size := image.Pt(rsize, gtx.Constraints.Max.Y)
+	gtx.Constraints = layout.Exact(size)
+	plist.widgets[idx].Layout(th, pgtx, gtx)
+	off.Pop()
 
 	// Draw bottom border.
 	paint.FillShape(gtx.Ops, th.Fg, clip.Rect{
