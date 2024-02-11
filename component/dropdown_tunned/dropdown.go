@@ -19,7 +19,7 @@ type (
 const (
 	DefaultPropertyHeight     = unit.Dp(30)
 	DefaultPropertyWidth      = unit.Dp(140)
-	DefaultPropertyListHeight = unit.Dp(70)
+	DefaultPropertyListHeight = unit.Dp(100)
 )
 
 // A DropDown holds and presents a vertical, scrollable list of properties. A DropDown
