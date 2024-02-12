@@ -35,42 +35,42 @@ type DropDown struct {
 	click   gesture.Click
 }
 
-func (a *DropDown) Layout(th *material.Theme, pgtx, gtx C) D {
+func (dd *DropDown) Layout(th *material.Theme, pgtx, gtx C) D {
 	// Handle menu selection.
-	a.menu.Options = a.menu.Options[:0]
-	for len(a.clickables) <= len(a.items) {
-		a.clickables = append(a.clickables, &widget.Clickable{})
+	dd.menu.Options = dd.menu.Options[:0]
+	for len(dd.clickables) <= len(dd.items) {
+		dd.clickables = append(dd.clickables, &widget.Clickable{})
 	}
-	for i := range a.items {
-		click := a.clickables[i]
+	for i := range dd.items {
+		click := dd.clickables[i]
 		if click.Clicked(gtx) {
-			a.Selected = i
+			dd.Selected = i
 		}
-		a.menu.Options = append(a.menu.Options, component.MenuItem(th, click, a.items[i]).Layout)
+		dd.menu.Options = append(dd.menu.Options, component.MenuItem(th, click, dd.items[i]).Layout)
 	}
-	a.area.Activation = pointer.ButtonPrimary
-	a.area.AbsolutePosition = true
+	dd.area.Activation = pointer.ButtonPrimary
+	dd.area.AbsolutePosition = true
 
-	// Handle focus "manually". When the dropdown is closed we draw a label,
-	// which can't receive focus. By registering a key.InputOp we can then receive
+	// Handle focus "manually". When the dropdown is closed we draw dd label,
+	// which can't receive focus. By registering dd key.InputOp we can then receive
 	// focus events (and draw the focus border). We also want to grab the focus when
-	// the dropdown is opened: we do this with a.click.
-	for _, e := range gtx.Events(a) {
+	// the dropdown is opened: we do this with dd.click.
+	for _, e := range gtx.Events(dd) {
 		switch e := e.(type) {
 		case key.FocusEvent:
-			a.focused = e.Focus
+			dd.focused = e.Focus
 		}
 	}
-	a.click.Update(gtx)
-	if a.click.Pressed() {
+	dd.click.Update(gtx)
+	if dd.click.Pressed() {
 		// Request focus
-		key.FocusOp{Tag: a}.Add(gtx.Ops)
+		key.FocusOp{Tag: dd}.Add(gtx.Ops)
 	}
 
 	// Clip events to the widget area only.
 	clipOp := clip.Rect{Max: gtx.Constraints.Max}.Push(gtx.Ops)
-	key.InputOp{Tag: a, Hint: key.HintAny}.Add(gtx.Ops)
-	a.click.Add(gtx.Ops)
+	key.InputOp{Tag: dd, Hint: key.HintAny}.Add(gtx.Ops)
+	dd.click.Add(gtx.Ops)
 	clipOp.Pop()
 
 	wgtx := gtx
@@ -80,13 +80,13 @@ func (a *DropDown) Layout(th *material.Theme, pgtx, gtx C) D {
 			defer clip.Rect{Max: gtx.Constraints.Max}.Push(gtx.Ops).Pop()
 
 			inset := layout.Inset{Top: 1, Right: 4, Bottom: 1, Left: 4}
-			label := material.Label(th, th.TextSize, a.items[a.Selected])
+			label := material.Label(th, th.TextSize, dd.items[dd.Selected])
 			label.MaxLines = 1
 			label.TextSize = th.TextSize
 			label.Alignment = text.Start
 			label.Color = th.Fg
 
-			// Draw a triangle to discriminate a drop down widgets from text props.
+			// Draw dd triangle to discriminate dd drop down widgets from text props.
 			//      w
 			//  _________  _
 			//  \       /  |
@@ -108,13 +108,13 @@ func (a *DropDown) Layout(th *material.Theme, pgtx, gtx C) D {
 			paint.FillShape(gtx.Ops, darkGrey, anchorArea)
 			stack.Pop()
 
-			return FocusBorder(th, a.focused).Layout(gtx, func(gtx C) D {
+			return FocusBorder(th, dd.focused).Layout(gtx, func(gtx C) D {
 				return inset.Layout(gtx, label.Layout)
 			})
 		}),
 		layout.Expanded(func(gtx C) D {
 			gtx.Constraints = layout.Exact(gtx.Constraints.Max)
-			return a.area.Layout(gtx, component.Menu(th, &a.menu).Layout)
+			return dd.area.Layout(gtx, component.Menu(th, &dd.menu).Layout)
 		}),
 	)
 }

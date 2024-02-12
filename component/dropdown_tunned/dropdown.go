@@ -109,15 +109,12 @@ func min[T constraints.Ordered](a, b T) T {
 func (dd *DropDown) layoutProperty(th *material.Theme, pgtx, gtx C) D {
 	rsize := gtx.Constraints.Max.X
 
-	{
-		// Draw property value.
-		gtx := gtx
-		off := op.Offset(dd.offset).Push(gtx.Ops)
-		size := image.Pt(rsize, gtx.Constraints.Max.Y)
-		gtx.Constraints = layout.Exact(size)
-		dd.DdWidget.Layout(th, pgtx, gtx)
-		off.Pop()
-	}
+	// Draw property value.
+	off := op.Offset(dd.offset).Push(gtx.Ops)
+	size := image.Pt(rsize, gtx.Constraints.Max.Y)
+	gtx.Constraints = layout.Exact(size)
+	dd.DdWidget.Layout(th, pgtx, gtx)
+	off.Pop()
 
 	return layout.Dimensions{Size: gtx.Constraints.Max}
 }
