@@ -90,7 +90,17 @@ func (dd *DropDown) Layout(th *material.Theme, gtx C) D {
 			func(gtx C) D {
 				gtx.Constraints.Min.Y = gtx.Dp(dd.PropertyHeight)
 				gtx.Constraints.Max.Y = gtx.Dp(dd.PropertyHeight)
-				return dd.layoutProperty(th, pgtx, gtx)
+
+				rsize := gtx.Constraints.Max.X
+
+				// Draw dropdown value.
+				off := op.Offset(dd.offset).Push(gtx.Ops)
+				size := image.Pt(rsize, gtx.Constraints.Max.Y)
+				gtx.Constraints = layout.Exact(size)
+				dd.DdWidget.Layout(th, pgtx, gtx)
+				off.Pop()
+
+				return layout.Dimensions{Size: gtx.Constraints.Max}
 			},
 		)
 	})
@@ -103,20 +113,6 @@ func min[T constraints.Ordered](a, b T) T {
 		return a
 	}
 	return b
-}
-
-// layoutProperty lays out the property at index i from the list.
-func (dd *DropDown) layoutProperty(th *material.Theme, pgtx, gtx C) D {
-	rsize := gtx.Constraints.Max.X
-
-	// Draw property value.
-	off := op.Offset(dd.offset).Push(gtx.Ops)
-	size := image.Pt(rsize, gtx.Constraints.Max.Y)
-	gtx.Constraints = layout.Exact(size)
-	dd.DdWidget.Layout(th, pgtx, gtx)
-	off.Pop()
-
-	return layout.Dimensions{Size: gtx.Constraints.Max}
 }
 
 // Widget shows the value of a property and handles user actions to edit it.
