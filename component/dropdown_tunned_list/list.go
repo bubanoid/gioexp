@@ -89,6 +89,7 @@ func (plist *List) Layout(th *material.Theme, gtx C) D {
 
 			rsize := gtx.Constraints.Max.X
 
+			// Draw dropdown value.
 			off := op.Offset(image.Pt(0, 0)).Push(gtx.Ops)
 			size := image.Pt(rsize, gtx.Constraints.Max.Y)
 			gtx.Constraints = layout.Exact(size)
