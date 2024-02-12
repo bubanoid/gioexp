@@ -6,11 +6,9 @@ import (
 	"os"
 
 	"gioui.org/app"
-	"gioui.org/io/key"
 	"gioui.org/io/system"
 	"gioui.org/layout"
 	"gioui.org/op"
-	"gioui.org/widget"
 	"gioui.org/widget/material"
 )
 
@@ -23,7 +21,7 @@ func main() {
 	ui := NewUI(material.NewTheme())
 
 	go func() {
-		w := app.NewWindow(app.Title("Property DropDown"))
+		w := app.NewWindow(app.Title("DropDown Menu"))
 		if err := ui.Run(w); err != nil {
 			log.Println(err)
 			os.Exit(1)
@@ -35,9 +33,8 @@ func main() {
 }
 
 type UI struct {
-	th  *material.Theme
-	dd  *dropdown_tunned.DropDown
-	btn widget.Clickable
+	th *material.Theme
+	dd *dropdown_tunned.DropDown
 }
 
 func NewUI(theme *material.Theme) *UI {
@@ -61,11 +58,6 @@ func (ui *UI) Run(w *app.Window) error {
 			gtx := layout.NewContext(&ops, e)
 			ui.Layout(gtx)
 			e.Frame(gtx.Ops)
-
-		case key.Event:
-			if e.Name == key.NameEscape {
-				return nil
-			}
 		case system.DestroyEvent:
 			return e.Err
 		}
@@ -73,21 +65,6 @@ func (ui *UI) Run(w *app.Window) error {
 }
 
 func (ui *UI) Layout(gtx C) D {
-	if ui.btn.Clicked(gtx) {
-		ui.dd.DdWidget.Selected = 2
-	}
-
 	gtx.Constraints.Min = gtx.Constraints.Max
-	return layout.Flex{
-		Axis:    layout.Vertical,
-		Spacing: layout.SpaceEnd,
-	}.Layout(gtx,
-		layout.Rigid(func(gtx C) D {
-			return ui.dd.Layout(ui.th, gtx)
-		}),
-		layout.Rigid(func(gtx C) D {
-			gtx.Constraints.Max.X = 200
-			return material.Button(ui.th, &ui.btn, "toggle editable").Layout(gtx)
-		}),
-	)
+	return ui.dd.Layout(ui.th, gtx)
 }

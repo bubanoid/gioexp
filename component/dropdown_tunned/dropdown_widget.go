@@ -1,9 +1,6 @@
 package dropdown_tunned
 
 import (
-	"image"
-	"image/color"
-
 	"gioui.org/f32"
 	"gioui.org/gesture"
 	"gioui.org/io/key"
@@ -16,6 +13,8 @@ import (
 	"gioui.org/widget"
 	"gioui.org/widget/material"
 	"gioui.org/x/component"
+	"image"
+	"image/color"
 )
 
 func rgb(c uint32) color.NRGBA {
@@ -61,7 +60,7 @@ func (a *DropDownWidget) Layout(th *material.Theme, pgtx, gtx C, offset image.Po
 		a.menu.Options = append(a.menu.Options, component.MenuItem(th, click, a.items[i]).Layout)
 	}
 	a.area.Activation = pointer.ButtonPrimary
-	a.area.AbsolutePosition = true // todo (AA): check it
+	a.area.AbsolutePosition = true // todo (AA): don't clear how it works
 
 	// Handle focus "manually". When the dropdown is closed we draw a label,
 	// which can't receive focus. By registering a key.InputOp we can then receive
@@ -75,14 +74,16 @@ func (a *DropDownWidget) Layout(th *material.Theme, pgtx, gtx C, offset image.Po
 	}
 	a.click.Update(gtx)
 
-	// todo (AA): didn't notice any effect
+	// check if dropdown is clicked
 	if a.click.Pressed() {
 		// Request focus
 		key.FocusOp{Tag: a}.Add(gtx.Ops)
+		// todo (AA): simulate a click within dropdown area
+		//gesture.ClickEvent{Kind: gesture.KindClick}
 	}
 
 	// Clip events to the DdWidget area only.
-	// todo (AA): changing Max doesn't have effect
+	// todo (AA): click within this area creates border
 	clipOp := clip.Rect{Max: gtx.Constraints.Max}.Push(gtx.Ops)
 	key.InputOp{Tag: a, Hint: key.HintAny}.Add(gtx.Ops)
 	a.click.Add(gtx.Ops)
@@ -131,6 +132,8 @@ func (a *DropDownWidget) Layout(th *material.Theme, pgtx, gtx C, offset image.Po
 		layout.Expanded(func(gtx C) D {
 			off := op.Offset(offset).Push(gtx.Ops)
 			gtx.Constraints = layout.Exact(gtx.Constraints.Max)
+			// todo (AA): draw colorbox here
+			// todo (AA) th contains Inset for menu labels
 			dimensions := a.area.Layout(gtx, component.Menu(th, &a.menu).Layout)
 			off.Pop()
 			return dimensions
