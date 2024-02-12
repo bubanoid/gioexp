@@ -86,7 +86,16 @@ func (plist *List) Layout(th *material.Theme, gtx C) D {
 		return plist.list.Layout(gtx, len(plist.widgets), func(gtx C, i int) D {
 			gtx.Constraints.Min.Y = gtx.Dp(plist.PropertyHeight)
 			gtx.Constraints.Max.Y = gtx.Dp(plist.PropertyHeight)
-			return plist.layoutProperty(i, th, pgtx, gtx)
+
+			rsize := gtx.Constraints.Max.X
+
+			off := op.Offset(image.Pt(0, 0)).Push(gtx.Ops)
+			size := image.Pt(rsize, gtx.Constraints.Max.Y)
+			gtx.Constraints = layout.Exact(size)
+			plist.widgets[i].Layout(th, pgtx, gtx)
+			off.Pop()
+
+			return layout.Dimensions{Size: gtx.Constraints.Max}
 		})
 	})
 
@@ -108,19 +117,6 @@ func clamp[T constraints.Ordered](mn, val, mx T) T {
 		return mx
 	}
 	return val
-}
-
-// layoutProperty lays out the property at index i from the list.
-func (plist *List) layoutProperty(idx int, th *material.Theme, pgtx, gtx C) D {
-	rsize := gtx.Constraints.Max.X
-
-	off := op.Offset(image.Pt(0, 0)).Push(gtx.Ops)
-	size := image.Pt(rsize, gtx.Constraints.Max.Y)
-	gtx.Constraints = layout.Exact(size)
-	plist.widgets[idx].Layout(th, pgtx, gtx)
-	off.Pop()
-
-	return layout.Dimensions{Size: gtx.Constraints.Max}
 }
 
 // Widget shows the value of a property and handles user actions to edit it.
