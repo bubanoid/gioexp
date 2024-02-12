@@ -4,7 +4,6 @@ import (
 	"image"
 
 	"gioui.org/layout"
-	"gioui.org/op"
 	"gioui.org/unit"
 	"gioui.org/widget"
 	"gioui.org/widget/material"
@@ -87,14 +86,11 @@ func (plist *List) Layout(th *material.Theme, gtx C) D {
 			gtx.Constraints.Min.Y = gtx.Dp(plist.PropertyHeight)
 			gtx.Constraints.Max.Y = gtx.Dp(plist.PropertyHeight)
 
-			rsize := gtx.Constraints.Max.X
-
 			// Draw dropdown value.
-			off := op.Offset(image.Pt(0, 0)).Push(gtx.Ops)
-			size := image.Pt(rsize, gtx.Constraints.Max.Y)
+			size := image.Pt(gtx.Constraints.Max.X, gtx.Constraints.Max.Y)
 			gtx.Constraints = layout.Exact(size)
-			plist.widgets[i].Layout(th, pgtx, gtx)
-			off.Pop()
+			// todo (AA): offset is passed
+			plist.widgets[i].Layout(th, pgtx, gtx, image.Point{X: 0, Y: 0})
 
 			return layout.Dimensions{Size: gtx.Constraints.Max}
 		})
@@ -125,5 +121,5 @@ type Widget interface {
 	// Layout lays out the property widget using gtx which is the
 	// property-specific context, and pgtx which is the parent context (useful
 	// for properties that require more space during edition).
-	Layout(th *material.Theme, pgtx, gtx layout.Context) D
+	Layout(th *material.Theme, pgtx, gtx layout.Context, offset image.Point) D
 }

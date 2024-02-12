@@ -45,7 +45,7 @@ type DropDownWidget struct {
 	click   gesture.Click
 }
 
-func (a *DropDownWidget) Layout(th *material.Theme, pgtx, gtx C) D {
+func (a *DropDownWidget) Layout(th *material.Theme, pgtx, gtx C, offset image.Point) D {
 	// Handle menu selection.
 	a.menu.Options = a.menu.Options[:0]
 	for len(a.clickables) <= len(a.items) {
@@ -56,10 +56,12 @@ func (a *DropDownWidget) Layout(th *material.Theme, pgtx, gtx C) D {
 		if click.Clicked(gtx) {
 			a.Selected = i
 		}
+		// todo (AA): Here we can decrease space between items in menu
+		// todo (AA): We can try to change gtx here
 		a.menu.Options = append(a.menu.Options, component.MenuItem(th, click, a.items[i]).Layout)
 	}
 	a.area.Activation = pointer.ButtonPrimary
-	a.area.AbsolutePosition = true
+	a.area.AbsolutePosition = true // todo (AA): check it
 
 	// Handle focus "manually". When the dropdown is closed we draw a label,
 	// which can't receive focus. By registering a key.InputOp we can then receive
@@ -80,6 +82,7 @@ func (a *DropDownWidget) Layout(th *material.Theme, pgtx, gtx C) D {
 	}
 
 	// Clip events to the DdWidget area only.
+	// todo (AA): changing Max doesn't have effect
 	clipOp := clip.Rect{Max: gtx.Constraints.Max}.Push(gtx.Ops)
 	key.InputOp{Tag: a, Hint: key.HintAny}.Add(gtx.Ops)
 	a.click.Add(gtx.Ops)
@@ -124,9 +127,13 @@ func (a *DropDownWidget) Layout(th *material.Theme, pgtx, gtx C) D {
 				return inset.Layout(gtx, label.Layout)
 			})
 		}),
+		// expanded dropdown menu
 		layout.Expanded(func(gtx C) D {
+			off := op.Offset(offset).Push(gtx.Ops)
 			gtx.Constraints = layout.Exact(gtx.Constraints.Max)
-			return a.area.Layout(gtx, component.Menu(th, &a.menu).Layout)
+			dimensions := a.area.Layout(gtx, component.Menu(th, &a.menu).Layout)
+			off.Pop()
+			return dimensions
 		}),
 	)
 }

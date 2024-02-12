@@ -1,7 +1,6 @@
 package dropdown_tunned
 
 import (
-	"gioui.org/op"
 	"image"
 
 	"gioui.org/layout"
@@ -20,6 +19,8 @@ const (
 	DefaultPropertyHeight     = unit.Dp(30)
 	DefaultPropertyWidth      = unit.Dp(140)
 	DefaultPropertyListHeight = unit.Dp(100)
+	DefaultOffsetX            = 200
+	DefaultOffsetY            = 0
 )
 
 // A DropDown holds and presents a vertical, scrollable list of properties. A DropDown
@@ -42,7 +43,7 @@ type DropDown struct {
 	PropertyWidth unit.Dp
 
 	// offset is the offset of the dropdown values
-	offset image.Point
+	Offset image.Point
 }
 
 // NewDropdown creates a new DropDown.
@@ -52,6 +53,7 @@ func NewDropdown(ddValues []string) *DropDown {
 		PropertyListHeight: DefaultPropertyListHeight,
 		PropertyHeight:     DefaultPropertyHeight,
 		PropertyWidth:      DefaultPropertyWidth,
+		Offset:             image.Point{X: DefaultOffsetX, Y: DefaultOffsetY},
 	}
 }
 
@@ -91,14 +93,10 @@ func (dd *DropDown) Layout(th *material.Theme, gtx C) D {
 				gtx.Constraints.Min.Y = gtx.Dp(dd.PropertyHeight)
 				gtx.Constraints.Max.Y = gtx.Dp(dd.PropertyHeight)
 
-				rsize := gtx.Constraints.Max.X
-
 				// Draw dropdown value.
-				off := op.Offset(dd.offset).Push(gtx.Ops)
-				size := image.Pt(rsize, gtx.Constraints.Max.Y)
+				size := image.Pt(gtx.Constraints.Max.X, gtx.Constraints.Max.Y)
 				gtx.Constraints = layout.Exact(size)
-				dd.DdWidget.Layout(th, pgtx, gtx)
-				off.Pop()
+				dd.DdWidget.Layout(th, pgtx, gtx, dd.Offset)
 
 				return layout.Dimensions{Size: gtx.Constraints.Max}
 			},

@@ -35,7 +35,7 @@ type DropDown struct {
 	click   gesture.Click
 }
 
-func (dd *DropDown) Layout(th *material.Theme, pgtx, gtx C) D {
+func (dd *DropDown) Layout(th *material.Theme, pgtx, gtx C, offset image.Point) D {
 	// Handle menu selection.
 	dd.menu.Options = dd.menu.Options[:0]
 	for len(dd.clickables) <= len(dd.items) {
@@ -113,8 +113,12 @@ func (dd *DropDown) Layout(th *material.Theme, pgtx, gtx C) D {
 			})
 		}),
 		layout.Expanded(func(gtx C) D {
+			off := op.Offset(offset).Push(gtx.Ops)
 			gtx.Constraints = layout.Exact(gtx.Constraints.Max)
-			return dd.area.Layout(gtx, component.Menu(th, &dd.menu).Layout)
+			dimensions := dd.area.Layout(gtx, component.Menu(th, &dd.menu).Layout)
+			off.Pop()
+			return dimensions
+
 		}),
 	)
 }
