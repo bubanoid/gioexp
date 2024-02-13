@@ -27,8 +27,11 @@ func argb(c uint32) color.NRGBA {
 
 var darkGrey = rgb(0xa9a9a9)
 
-func NewDropDownWidget(items []string) *DropDownWidget {
-	return &DropDownWidget{items: items}
+func NewDropDownWidget(items []string, offsetX, offsetY float64) *DropDownWidget {
+	dropdownWidget := DropDownWidget{items: items}
+	dropdownWidget.area.OffsetX = offsetX
+	dropdownWidget.area.OffsetY = offsetY
+	return &dropdownWidget
 }
 
 type DropDownWidget struct {
@@ -36,7 +39,7 @@ type DropDownWidget struct {
 	Selected int
 
 	items      []string
-	area       component.ContextArea
+	area       ContextArea
 	menu       component.MenuState
 	clickables []*widget.Clickable
 
@@ -44,7 +47,7 @@ type DropDownWidget struct {
 	click   gesture.Click
 }
 
-func (a *DropDownWidget) Layout(th *material.Theme, pgtx, gtx C, offset image.Point) D {
+func (a *DropDownWidget) Layout(th *material.Theme, pgtx, gtx C) D {
 	// Handle menu selection.
 	a.menu.Options = a.menu.Options[:0]
 	for len(a.clickables) <= len(a.items) {
@@ -56,7 +59,6 @@ func (a *DropDownWidget) Layout(th *material.Theme, pgtx, gtx C, offset image.Po
 			a.Selected = i
 		}
 		// todo (AA): Here we can decrease space between items in menu
-		// todo (AA): We can try to change gtx here
 		a.menu.Options = append(a.menu.Options, component.MenuItem(th, click, a.items[i]).Layout)
 	}
 	a.area.Activation = pointer.ButtonPrimary
@@ -78,8 +80,6 @@ func (a *DropDownWidget) Layout(th *material.Theme, pgtx, gtx C, offset image.Po
 	if a.click.Pressed() {
 		// Request focus
 		key.FocusOp{Tag: a}.Add(gtx.Ops)
-		// todo (AA): simulate a click within dropdown area
-		//gesture.ClickEvent{Kind: gesture.KindClick}
 	}
 
 	// Clip events to the DdWidget area only.
@@ -130,12 +130,8 @@ func (a *DropDownWidget) Layout(th *material.Theme, pgtx, gtx C, offset image.Po
 		}),
 		// expanded dropdown menu
 		layout.Expanded(func(gtx C) D {
-			off := op.Offset(offset).Push(gtx.Ops)
-			gtx.Constraints = layout.Exact(gtx.Constraints.Max)
-			// todo (AA): draw colorbox here
 			// todo (AA) th contains Inset for menu labels
-			dimensions := a.area.Layout(gtx, component.Menu(th, &a.menu).Layout)
-			off.Pop()
+			dimensions := a.area.Layout(gtx, wgtx, component.Menu(th, &a.menu).Layout)
 			return dimensions
 		}),
 	)

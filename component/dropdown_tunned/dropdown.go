@@ -19,8 +19,8 @@ const (
 	DefaultPropertyHeight     = unit.Dp(30)
 	DefaultPropertyWidth      = unit.Dp(140)
 	DefaultPropertyListHeight = unit.Dp(100)
-	DefaultOffsetX            = 200
-	DefaultOffsetY            = 0
+	DefaultOffsetX            = 240.0
+	DefaultOffsetY            = 100.0
 )
 
 // A DropDown holds and presents a vertical, scrollable list of properties. A DropDown
@@ -41,19 +41,16 @@ type DropDown struct {
 	// PropertyWidth is the width of a property. All properties have
 	// the same width.
 	PropertyWidth unit.Dp
-
-	// offset is the offset of the dropdown values
-	Offset image.Point
 }
 
 // NewDropdown creates a new DropDown.
 func NewDropdown(ddValues []string) *DropDown {
+	ddWidget := NewDropDownWidget(ddValues, DefaultOffsetX, DefaultOffsetY)
 	return &DropDown{
-		DdWidget:           *NewDropDownWidget(ddValues),
+		DdWidget:           *ddWidget, // todo (AA): check if we need * here
 		PropertyListHeight: DefaultPropertyListHeight,
 		PropertyHeight:     DefaultPropertyHeight,
 		PropertyWidth:      DefaultPropertyWidth,
-		Offset:             image.Point{X: DefaultOffsetX, Y: DefaultOffsetY},
 	}
 }
 
@@ -93,10 +90,10 @@ func (dd *DropDown) Layout(th *material.Theme, gtx C) D {
 				gtx.Constraints.Min.Y = gtx.Dp(dd.PropertyHeight)
 				gtx.Constraints.Max.Y = gtx.Dp(dd.PropertyHeight)
 
-				// Draw dropdown value.
+				// Draw dropdown collapsed or expanded.
 				size := image.Pt(gtx.Constraints.Max.X, gtx.Constraints.Max.Y)
 				gtx.Constraints = layout.Exact(size)
-				dd.DdWidget.Layout(th, pgtx, gtx, dd.Offset)
+				dd.DdWidget.Layout(th, pgtx, gtx)
 
 				return layout.Dimensions{Size: gtx.Constraints.Max}
 			},
