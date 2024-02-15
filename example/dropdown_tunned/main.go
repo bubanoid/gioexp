@@ -10,6 +10,7 @@ import (
 	"gioui.org/io/system"
 	"gioui.org/layout"
 	"gioui.org/op"
+	"gioui.org/unit"
 	"gioui.org/widget/material"
 )
 
@@ -22,7 +23,7 @@ func main() {
 	ui := NewUI(material.NewTheme())
 
 	go func() {
-		w := app.NewWindow(app.Title("DropDown Menu"))
+		w := app.NewWindow(app.Title("DropDown Menu"), app.Size(unit.Dp(250), unit.Dp(370)))
 		if err := ui.Run(w); err != nil {
 			log.Println(err)
 			os.Exit(1)
