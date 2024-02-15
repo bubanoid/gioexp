@@ -16,11 +16,12 @@ type (
 )
 
 const (
-	DefaultPropertyHeight     = unit.Dp(20)
-	DefaultPropertyWidth      = unit.Dp(120)
+	DefaultPropertyHeight     = unit.Dp(27)
+	DefaultPropertyWidth      = unit.Dp(110)
 	DefaultPropertyListHeight = unit.Dp(100)
-	DefaultOffsetX            = 240.0
-	DefaultOffsetY            = 100.0
+	DefaultOffsetX            = 50.0
+	DefaultOffsetY            = 70.0
+	DefaultDropdownTextSize   = unit.Sp(14)
 )
 
 // A DropDown holds and presents a vertical, scrollable list of properties. A DropDown
@@ -44,10 +45,10 @@ type DropDown struct {
 }
 
 // NewDropdown creates a new DropDown.
-func NewDropdown(ddValues []string) *DropDown {
-	ddWidget := NewDropDownWidget(ddValues, DefaultOffsetX, DefaultOffsetY)
+func NewDropdown(ddValues []string, selectedMenuItemHandler MenuItemHandlerType) *DropDown {
+	ddWidget := NewDropDownWidget(ddValues, DefaultOffsetX, DefaultOffsetY, DefaultDropdownTextSize, selectedMenuItemHandler)
 	return &DropDown{
-		DdWidget:           *ddWidget, // todo (AA): check if we need * here
+		DdWidget:           *ddWidget, // todo (AA): check if we can avoid pointer here
 		PropertyListHeight: DefaultPropertyListHeight,
 		PropertyHeight:     DefaultPropertyHeight,
 		PropertyWidth:      DefaultPropertyWidth,
@@ -115,5 +116,5 @@ type Widget interface {
 	// Layout lays out the property DdWidget using gtx which is the
 	// property-specific context, and pgtx which is the parent context (useful
 	// for properties that require more space during edition).
-	Layout(th *material.Theme, pgtx, gtx layout.Context) D
+	Layout(th *material.Theme, pgtx, gtx C) D
 }

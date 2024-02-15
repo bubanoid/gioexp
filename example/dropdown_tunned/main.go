@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"github.com/arl/gioexp/component/dropdown_tunned"
 	"log"
 	"os"
@@ -37,6 +38,10 @@ type UI struct {
 	dd *dropdown_tunned.DropDown
 }
 
+func doSmth() {
+	fmt.Print("dropdown item selected\n")
+}
+
 func NewUI(theme *material.Theme) *UI {
 	ui := &UI{
 		th: theme,
@@ -44,6 +49,7 @@ func NewUI(theme *material.Theme) *UI {
 
 	dropdown := dropdown_tunned.NewDropdown(
 		[]string{"ciao", "bonjour", "hello", "hallo", "buongiorno", "buenos dias", "ola", "bom dia"},
+		doSmth,
 	)
 
 	ui.dd = dropdown

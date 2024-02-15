@@ -10,6 +10,7 @@ import (
 	"gioui.org/op/clip"
 	"gioui.org/op/paint"
 	"gioui.org/text"
+	"gioui.org/unit"
 	"gioui.org/widget"
 	"gioui.org/widget/material"
 	"gioui.org/x/component"
@@ -27,12 +28,14 @@ func argb(c uint32) color.NRGBA {
 
 var darkGrey = rgb(0xa9a9a9)
 
-func NewDropDownWidget(items []string, offsetX, offsetY float64) *DropDownWidget {
-	dropdownWidget := DropDownWidget{items: items}
+func NewDropDownWidget(items []string, offsetX, offsetY float64, dropdownTextSize unit.Sp, selectedMenuItemHandler MenuItemHandlerType) *DropDownWidget {
+	dropdownWidget := DropDownWidget{items: items, dropdownTextSize: dropdownTextSize, selectedMenuItemHandler: selectedMenuItemHandler}
 	dropdownWidget.area.OffsetX = offsetX
 	dropdownWidget.area.OffsetY = offsetY
 	return &dropdownWidget
 }
+
+type MenuItemHandlerType func()
 
 type DropDownWidget struct {
 	Widget
@@ -43,50 +46,56 @@ type DropDownWidget struct {
 	menu       component.MenuState
 	clickables []*widget.Clickable
 
-	focused bool
-	click   gesture.Click
+	focused                 bool
+	click                   gesture.Click
+	dropdownTextSize        unit.Sp
+	selectedMenuItemHandler MenuItemHandlerType
 }
 
-func (a *DropDownWidget) Layout(th *material.Theme, pgtx, gtx C) D {
+func (ddWidget *DropDownWidget) Layout(th *material.Theme, pgtx, gtx C) D {
 	// Handle menu selection.
-	a.menu.Options = a.menu.Options[:0]
-	for len(a.clickables) <= len(a.items) {
-		a.clickables = append(a.clickables, &widget.Clickable{})
+	ddWidget.menu.Options = ddWidget.menu.Options[:0]
+	for len(ddWidget.clickables) <= len(ddWidget.items) {
+		ddWidget.clickables = append(ddWidget.clickables, &widget.Clickable{})
 	}
-	for i := range a.items {
-		click := a.clickables[i]
+
+	textSize := th.TextSize
+	th.TextSize = ddWidget.dropdownTextSize
+	for i := range ddWidget.items {
+		click := ddWidget.clickables[i]
 		if click.Clicked(gtx) {
-			a.Selected = i
+			ddWidget.Selected = i
+			ddWidget.selectedMenuItemHandler()
 		}
 		// todo (AA): Here we can decrease space between items in menu
-		a.menu.Options = append(a.menu.Options, component.MenuItem(th, click, a.items[i]).Layout)
+		ddWidget.menu.Options = append(ddWidget.menu.Options, component.MenuItem(th, click, ddWidget.items[i]).Layout)
 	}
-	a.area.Activation = pointer.ButtonPrimary
-	a.area.AbsolutePosition = true // todo (AA): don't clear how it works
+	th.TextSize = textSize
+	ddWidget.area.Activation = pointer.ButtonPrimary
+	ddWidget.area.AbsolutePosition = true // todo (AA): don't clear how it works
 
-	// Handle focus "manually". When the dropdown is closed we draw a label,
-	// which can't receive focus. By registering a key.InputOp we can then receive
+	// Handle focus "manually". When the dropdown is closed we draw ddWidget label,
+	// which can't receive focus. By registering ddWidget key.InputOp we can then receive
 	// focus events (and draw the focus border). We also want to grab the focus when
-	// the dropdown is opened: we do this with a.click.
-	for _, e := range gtx.Events(a) {
+	// the dropdown is opened: we do this with ddWidget.click.
+	for _, e := range gtx.Events(ddWidget) {
 		switch e := e.(type) {
 		case key.FocusEvent:
-			a.focused = e.Focus
+			ddWidget.focused = e.Focus
 		}
 	}
-	a.click.Update(gtx)
+	ddWidget.click.Update(gtx)
 
 	// check if dropdown is clicked
-	if a.click.Pressed() {
+	if ddWidget.click.Pressed() {
 		// Request focus
-		key.FocusOp{Tag: a}.Add(gtx.Ops)
+		key.FocusOp{Tag: ddWidget}.Add(gtx.Ops)
 	}
 
-	// Clip events to the DdWidget area only.
-	// todo (AA): click within this area creates border
+	// Clip events to the DdWidget area (area fo collapsed dropdown) only.
 	clipOp := clip.Rect{Max: gtx.Constraints.Max}.Push(gtx.Ops)
-	key.InputOp{Tag: a, Hint: key.HintAny}.Add(gtx.Ops)
-	a.click.Add(gtx.Ops)
+	key.InputOp{Tag: ddWidget, Hint: key.HintAny}.Add(gtx.Ops)
+	ddWidget.click.Add(gtx.Ops)
 	clipOp.Pop()
 
 	wgtx := gtx
@@ -96,9 +105,9 @@ func (a *DropDownWidget) Layout(th *material.Theme, pgtx, gtx C) D {
 			defer clip.Rect{Max: gtx.Constraints.Max}.Push(gtx.Ops).Pop()
 
 			inset := layout.Inset{Top: 1, Right: 4, Bottom: 1, Left: 4}
-			label := material.Label(th, th.TextSize, a.items[a.Selected])
+			label := material.Label(th, th.TextSize, ddWidget.items[ddWidget.Selected])
 			label.MaxLines = 1
-			label.TextSize = th.TextSize
+			label.TextSize = ddWidget.dropdownTextSize // or th.TextSize
 			label.Alignment = text.Start
 			label.Color = th.Fg
 
@@ -124,14 +133,14 @@ func (a *DropDownWidget) Layout(th *material.Theme, pgtx, gtx C) D {
 			paint.FillShape(gtx.Ops, darkGrey, anchorArea)
 			stack.Pop()
 
-			return FocusBorder(th, a.focused).Layout(gtx, func(gtx C) D {
+			return FocusBorder(th, ddWidget.focused).Layout(gtx, func(gtx C) D {
 				return inset.Layout(gtx, label.Layout)
 			})
 		}),
 		// expanded dropdown menu
 		layout.Expanded(func(gtx C) D {
 			// todo (AA) th contains Inset for menu labels
-			dimensions := a.area.Layout(gtx, wgtx, component.Menu(th, &a.menu).Layout)
+			dimensions := ddWidget.area.Layout(gtx, wgtx, component.Menu(th, &ddWidget.menu).Layout)
 			return dimensions
 		}),
 	)
