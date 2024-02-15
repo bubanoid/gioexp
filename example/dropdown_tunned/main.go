@@ -62,7 +62,9 @@ func (ui *UI) Run(w *app.Window) error {
 		switch e := w.NextEvent().(type) {
 		case system.FrameEvent:
 			gtx := layout.NewContext(&ops, e)
-			ui.Layout(gtx)
+			layout.Center.Layout(gtx, func(gtx C) D {
+				return ui.Layout(gtx)
+			})
 			e.Frame(gtx.Ops)
 		case system.DestroyEvent:
 			return e.Err
