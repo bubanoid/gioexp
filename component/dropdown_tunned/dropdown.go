@@ -85,20 +85,15 @@ func (dd *DropDown) Layout(th *material.Theme, gtx C) D {
 		pgtx.Constraints = layout.Exact(image.Pt(wtotal, htotal+hlist))
 		gtx.Constraints = layout.Exact(image.Pt(wtotal, htotal))
 
-		return layout.Inset{}.Layout(
-			gtx,
-			func(gtx C) D {
-				gtx.Constraints.Min.Y = gtx.Dp(dd.PropertyHeight)
-				gtx.Constraints.Max.Y = gtx.Dp(dd.PropertyHeight)
+		gtx.Constraints.Min.Y = gtx.Dp(dd.PropertyHeight)
+		gtx.Constraints.Max.Y = gtx.Dp(dd.PropertyHeight)
 
-				// Draw dropdown collapsed or expanded.
-				size := image.Pt(gtx.Constraints.Max.X, gtx.Constraints.Max.Y)
-				gtx.Constraints = layout.Exact(size)
-				dd.DdWidget.Layout(th, pgtx, gtx)
+		// Draw dropdown collapsed or expanded.
+		size := image.Pt(gtx.Constraints.Max.X, gtx.Constraints.Max.Y)
+		gtx.Constraints = layout.Exact(size)
+		dd.DdWidget.Layout(th, pgtx, gtx)
 
-				return layout.Dimensions{Size: gtx.Constraints.Max}
-			},
-		)
+		return layout.Dimensions{Size: gtx.Constraints.Max}
 	})
 
 	return dim
