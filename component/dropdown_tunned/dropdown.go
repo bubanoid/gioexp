@@ -16,8 +16,8 @@ type (
 )
 
 const (
-	DefaultPropertyHeight     = unit.Dp(30)
-	DefaultPropertyWidth      = unit.Dp(140)
+	DefaultPropertyHeight     = unit.Dp(20)
+	DefaultPropertyWidth      = unit.Dp(120)
 	DefaultPropertyListHeight = unit.Dp(100)
 	DefaultOffsetX            = 240.0
 	DefaultOffsetY            = 100.0
