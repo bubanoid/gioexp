@@ -92,7 +92,7 @@ func (ddWidget *DropDownWidget) Layout(th *material.Theme, pgtx, gtx C) D {
 		key.FocusOp{Tag: ddWidget}.Add(gtx.Ops)
 	}
 
-	// Clip events to the DdWidget area (area fo collapsed dropdown) only.
+	// Clip presenting active border event to the DdWidget area (area fo collapsed dropdown) only.
 	clipOp := clip.Rect{Max: gtx.Constraints.Max}.Push(gtx.Ops)
 	key.InputOp{Tag: ddWidget, Hint: key.HintAny}.Add(gtx.Ops)
 	ddWidget.click.Add(gtx.Ops)
