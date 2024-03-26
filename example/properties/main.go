@@ -54,7 +54,7 @@ var (
 func NewUI(theme *material.Theme) *UI {
 	ui := &UI{
 		th: theme,
-		dd: property.NewDropDown([]string{"ciao", "bonjour", "hello", "hallo", "buongiorno", "buenos dias", "ola", "bom dia"}),
+		dd: property.NewDropDown([]string{"ciao", "bonjour", "hello", "hallo", "buongiorno", "buenos dias", "ola", "bom dia", "привіт"}),
 	}
 
 	plist := property.NewList()
@@ -94,7 +94,7 @@ func (ui *UI) Run(w *app.Window) error {
 func (ui *UI) Layout(gtx C) D {
 	if ui.btn.Clicked(gtx) {
 		ui.prop5.Editable = !ui.prop5.Editable
-		ui.dd.Selected = 2
+		ui.dd.Selected = 8
 		ui.prop5.SetValue(234)
 	}
 
